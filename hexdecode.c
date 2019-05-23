@@ -18,8 +18,6 @@ static const char hextable[] = {
    ['A'] = 10, 11, 12, 13, 14, 15
 };
 
-typedef unsigned short u16;
-
 char hexdecode(char hex[2]) {
    return (hextable[hex[0]] << 4) | hextable[hex[1]];
 }
