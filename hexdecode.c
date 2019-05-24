@@ -13,13 +13,16 @@ char data[] =
 #include "hex.txt"
 ;
 
+// This should fit in a cache line
 static const char hextable[] = {
-   ['0'] = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-   ['A'] = 10, 11, 12, 13, 14, 15
+   -1, 10, 11, 12, 13, 14, 15,
+   -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    -1, -1, -1, -1, -1, -1
 };
 
-char hexdecode(char hex[2]) {
-   return (hextable[hex[0]] << 4) | hextable[hex[1]];
+short hexdecode(char hex[2]) {
+   return (hextable[hex[0] & 0x1f] << 4) | hextable[hex[1] & 0x1f];
 }
 
 int main(int n, char *args[]) {
