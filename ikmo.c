@@ -9,8 +9,8 @@ u64 encode(u64 bin) {
    static const u64 mask8 = 0x0808080808080808LL;
    static const u64 alnum = 0x3030303030303030LL;
    u64 t = bin & mask8;
-   u64 ascii = (bin & half) | (t << 1) | (t << 3);
-   return ascii ^ alnum;
+   u64 hij = (bin & half) | (t << 1) | (t << 3);
+   return hij ^ alnum;
 }
 
 u64 decode(u64 lo, u64 hi) {
