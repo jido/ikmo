@@ -21,24 +21,22 @@ static const short hextable[] = {
     -1, -1, -1, -1, -1, -1
 };
 
-short hexdecode(char hex[2]) {
+short hexbyte(char hex[2]) {
    return (hextable[hex[0] & 0x1f] << 4) | hextable[hex[1] & 0x1f];
 }
 
-int main(int n, char *args[]) {
-    char *end = data + sizeof(data) - 1;
-   
-    char buf[1024];
-    int p = 0;
-    for (char *x = data; x < end; x += 2)
+size_t hexdecode(char *from, char *to) {
+    short value;
+    char *bin;
+    for (bin = to; *from && (value = hexbyte(from)) >= 0; ++bin)
     {
-        buf[p] = hexdecode(x);
-        if (p == sizeof(buf) - 1)
-        {
-            fwrite(&buf, sizeof(buf), 1, stdout);
-            p = 0;
-        }
-        else ++p;
+        *bin = value;
+        from += 2;
     }
-    fwrite(&buf, 1, p, stdout);
+    return bin - to;
+}
+
+int main(int n, char *args[]) {
+    size_t len = hexdecode(data, data);
+    fwrite(data, 1, len, stdout);
 }
