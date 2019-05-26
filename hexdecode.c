@@ -14,7 +14,7 @@ char data[] =
 ;
 
 // This should fit in a cache line
-static const short hextable[] = {
+const short hextable[32] = {
    -1, 10, 11, 12, 13, 14, 15,
    -1, -1, -1, -1, -1, -1, -1, -1, -1,
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9,

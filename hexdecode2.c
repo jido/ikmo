@@ -14,7 +14,7 @@ char data[] =
 ;
 
 // This should fit in a cache line
-static const short hextable[] = {
+const short hextable[32] = {
    -1, 10, 11, 12, 13, 14, 15,
    -1, -1, -1, -1, -1, -1, -1, -1, -1,
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -25,6 +25,11 @@ short hexbyte(char hex[2]) {
    return (hextable[hex[0] & 0x1f] << 4) | hextable[hex[1] & 0x1f];
 }
 
+// Decode the string until the pointer reaches a NUL byte or "something"
+// which the function cannot decode.
+// That "something" is pretty loose and it will happily decode characters
+// outside the 0-F range, in fact half of the 256 possible characters
+// values are decoded as if they were all hex characters.
 size_t hexdecode(char *from, char *to) {
     short value;
     char *bin;
