@@ -42,6 +42,6 @@ size_t hexdecode(char *from, char *to) {
 }
 
 int main(int n, char *args[]) {
-    size_t len = hexdecode(data, data);
+    size_t len = hexdecode(data, data);  // reuse the beginning of the data as decoding buffer
     fwrite(data, 1, len, stdout);
 }
