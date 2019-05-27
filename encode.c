@@ -11,12 +11,12 @@ int main(int n, char *args[]) {
    int count = 1024 / BYTES;
    if (n > 1)
    {
-       int arg = strtod(args[1], NULL);
+       int arg = atoi(args[1]);
        if (arg < 1 || arg > count)
        {
-           puts("Usage: encode n");
-           printf(" n: number of 64-bit words per chunk (max %d)\n", count);
-           puts("Warning - number out of range, using default.");
+           fprintf(stderr, "Usage: encode n\n");
+           fprintf(stderr, " n: number of 64-bit words per chunk (max %d)\n", count);
+           fprintf(stderr, "Warning - number out of range, using default.\n");
        }
        else count = arg;
    }
