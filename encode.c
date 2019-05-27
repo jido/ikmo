@@ -17,10 +17,11 @@ int main(int n, char *args[]) {
       fputc('\n', stdout);
    }
    int left = len % 8;
-   u64 *last = buf + len / 8;
+   char *last = ((char *)buf) + len - left;
    if (left != 0) {
        u64 data = 0;
-       sprintf((char *)&data, "%.*s", left, (char *)last);
+       char *p = (char *)&data;
+       for (int i = 0; i < left; ++i) p[i] = last[i];
        u64 code[2] = { encode(data), encode(data >> 4) };
        fwrite(code, 8, 2, stdout);
    }
