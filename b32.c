@@ -98,7 +98,8 @@ size_t b32decode(char *from, char *to, size_t len) {
     // size_t es = len / 13 * sizeof(u64);
     while (len > 0)
     {
-        strncpy((char *)buf, from, (len < sizeof(buf) ? len : sizeof(buf)));
+        int x = (len < sizeof(buf) ? len : sizeof(buf));
+        strncpy((char *)buf, from, x);
         for (int w = 0; w < 13 && w * sizeof(u64) < len + sizeof(u64); ++w)
         {
             u64 t =  ~buf[w] & 0x4040404040404040LL;
@@ -106,9 +107,6 @@ size_t b32decode(char *from, char *to, size_t len) {
         }
         for (char *bytes = (char *)buf; bytes < (char *)(buf + 13) && len > 0; bytes += 13)
         {
-            // 11100000 32222211 44443333 66555554 77777666 99988888 baaaaa99 ccccbbbb
-            //     2        4        5        7        8       10       12       13
-            static const int size[13] = {0, 0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 6, 7};    // 1-indexed
             // Note: little endian byte order
             u64 bin = (u64)bytes[0]
                 | ((u64)bytes[1] << 5)
@@ -131,6 +129,9 @@ size_t b32decode(char *from, char *to, size_t len) {
             }
             else
             {
+                // 11100000 32222211 44443333 66555554 77777666 99988888 baaaaa99 ccccbbbb
+                //     2        4        5        7        8       10       12       13
+                static const int size[13] = {0, 0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 6, 7};    // 1-indexed
                 count = size[len];      // number of bytes left to copy
                 len = 0;
             }
@@ -144,14 +145,14 @@ size_t b32decode(char *from, char *to, size_t len) {
 }
 
 int main(int n, char* args[]) {
-    char buf[1025];
+    char buf[1024];
     char code[(sizeof(buf) * 13) / sizeof(u64) + 1];
     int len = 0;
     while ( (len = fread(buf, 1, sizeof(buf), stdin)) )
     {
         size_t size = b32encode(buf, code, len);
         size_t size2 = b32decode(code, buf, size);
-        printf("%lu->%lu. %.*s  | %.*s\n", size2, size, (int)size, code, len, buf);
+        printf("%lu->%lu. %.*s  | %.*s\n", size2, size, (int)size, code, (int)size2, buf);
         if (size2 != len) printf("SIZE ERROR (%d)\n", len);
     }
 }
