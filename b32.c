@@ -88,15 +88,12 @@ size_t b32encode(char *from, char *to, size_t len) {
     }
     if (len != 0)
     {
-        // 11100000 32222211 44443333 66555554 77777666 99988888 baaaaa99 ccccbbbb
-        //     2        4        5        7        8       10       12       13
-        static const int size[sizeof(u64)] = {0, 2, 4, 5, 7, 8, 10, 12};    // 1-indexed
         u64 rest = 0;
         char *prest = (char *)&rest;
         for (int c = 0; c < len; ++c) prest[c] = from[c];   // copy remaining bytes
         char temp[13];
         encode_word(rest, temp);    // encode to temporary buffer
-        int count = size[len];
+        int count = encoded_size(len);
         strncpy(to, temp, count);
         es += count;
     }
@@ -141,10 +138,7 @@ size_t b32decode(char *from, char *to, size_t len) {
             }
             else
             {
-                // 11100000 32222211 44443333 66555554 77777666 99988888 baaaaa99 ccccbbbb
-                //     2        4        5        7        8       10       12       13
-                static const int size[13] = {0, 0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 6, 7};    // 1-indexed
-                count = size[len];      // number of bytes left to copy
+                count = decoded_size(len);      // number of bytes left to copy
                 len = 0;
             }
             char *pbin = (char *)&bin;
@@ -158,7 +152,7 @@ size_t b32decode(char *from, char *to, size_t len) {
 
 int main(int n, char* args[]) {
     char buf[1024];
-    char code[(sizeof(buf) * 13) / sizeof(u64) + 1];
+    char code[encoded_size(sizeof(buf))];
     int len = 0;
     while ( (len = fread(buf, 1, sizeof(buf), stdin)) )
     {
