@@ -3,6 +3,18 @@
 
 typedef unsigned long long u64;
 
+size_t encoded_size(size_t size) {
+    size_t len = size / sizeof(u64);
+    int rest = size % sizeof(u64);
+    return len * 13 + (rest * 8 + 4) / 5;      // round up number of base32 digits
+}
+
+size_t decoded_size(size_t size) {
+    size_t len = size / 13;
+    int rest = size % 13;
+    return len * sizeof(u64) + rest * 5 / 8;   // round down number of bytes
+}
+
 /*
  Alternative alphabets:
  00  ( @ `
