@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "ikmo.h"
 
-typedef unsigned long long u64;
 #define BYTES sizeof(u64)
-u64 encode(u64 bin);
 
 int main(int n, char *args[]) {
    u64 buf[1024 / BYTES];

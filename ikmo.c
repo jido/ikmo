@@ -1,6 +1,6 @@
-#define half 0x0f0f0f0f0f0f0f0fLL
+#include "ikmo.h"
 
-typedef unsigned long long u64;
+#define half 0x0f0f0f0f0f0f0f0fLL
 
 // Usage:
 //  u64 lo = encode(value64);

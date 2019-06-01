@@ -1,15 +1,14 @@
-#include <stdio.h>
 #include <string.h>
 
 typedef unsigned long long u64;
 
-size_t encoded_size(size_t size) {
+size_t b32encoded_size(size_t size) {
     size_t len = size / sizeof(u64);
     int rest = size % sizeof(u64);
     return len * 13 + (rest * 8 + 4) / 5;      // round up number of base32 digits
 }
 
-size_t decoded_size(size_t size) {
+size_t b32decoded_size(size_t size) {
     size_t len = size / 13;
     int rest = size % 13;
     return len * sizeof(u64) + rest * 5 / 8;   // round down number of bytes
@@ -93,7 +92,7 @@ size_t b32encode(char *from, char *to, size_t len) {
         for (int c = 0; c < len; ++c) prest[c] = from[c];   // copy remaining bytes
         char temp[13];
         encode_word(rest, temp);    // encode to temporary buffer
-        int count = encoded_size(len);
+        int count = b32encoded_size(len);
         strncpy(to, temp, count);
         es += count;
     }
@@ -138,7 +137,7 @@ size_t b32decode(char *from, char *to, size_t len) {
             }
             else
             {
-                count = decoded_size(len);      // number of bytes left to copy
+                count = b32decoded_size(len);      // number of bytes left to copy
                 len = 0;
             }
             char *pbin = (char *)&bin;
@@ -148,17 +147,4 @@ size_t b32decode(char *from, char *to, size_t len) {
         }
     }
     return ds;
-}
-
-int main(int n, char* args[]) {
-    char buf[1024];
-    char code[encoded_size(sizeof(buf))];
-    int len = 0;
-    while ( (len = fread(buf, 1, sizeof(buf), stdin)) )
-    {
-        size_t size = b32encode(buf, code, len);
-        size_t size2 = b32decode(code, buf, size);
-        printf("%lu->%lu. %.*s  | %.*s\n", size2, size, (int)size, code, (int)size2, buf);
-        if (size2 != len) printf("SIZE ERROR (%d)\n", len);
-    }
 }
