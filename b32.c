@@ -1,17 +1,19 @@
 #include <string.h>
+#include <limits.h>
 
 typedef unsigned long long u64;
+const int b32_chars_per_u64 = (sizeof(u64) * CHAR_BIT + 4) / 5;
 
 size_t b32encoded_size(size_t size) {
     size_t len = size / sizeof(u64);
     int rest = size % sizeof(u64);
-    return len * 13 + (rest * 8 + 4) / 5;      // round up number of base32 digits
+    return len * b32_chars_per_u64 + (rest * CHAR_BIT + 4) / 5;      // round up number of base32 digits
 }
 
 size_t b32decoded_size(size_t size) {
-    size_t len = size / 13;
-    int rest = size % 13;
-    return len * sizeof(u64) + rest * 5 / 8;   // round down number of bytes
+    size_t len = size / b32_chars_per_u64;
+    int rest = size % b32_chars_per_u64;
+    return len * sizeof(u64) + rest * 5 / CHAR_BIT;   // round down number of bytes
 }
 
 /*
@@ -57,7 +59,7 @@ const char b32table[32] = {
   'x', 'y', 'z', '3', '4', '5', '6', '7'
 };
 
-// Note: little endian byte order
+// Note: little endian byte order, assume u64 is 64 bits
 void encode_word(u64 bin, char *to) {
     to[0] = b32table[bin & 0x1f];
     to[1] = b32table[(bin >> 5) & 0x1f];
@@ -76,12 +78,12 @@ void encode_word(u64 bin, char *to) {
 
 // len = byte length of source data
 size_t b32encode(char *from, char *to, size_t len) {
-    size_t es = len / sizeof(u64) * 13;
+    size_t es = len / sizeof(u64) * b32_chars_per_u64;
     while (len >= sizeof(u64))
     {
-        u64 *bin = (u64 *)from;
+        u64 *bin = (u64 *)from;     // assume from is properly aligned
         encode_word(*bin, to);
-        to += 13;
+        to += b32_chars_per_u64;
         from += sizeof(u64);
         len -= sizeof(u64);
     }
@@ -90,7 +92,7 @@ size_t b32encode(char *from, char *to, size_t len) {
         u64 rest = 0;
         char *prest = (char *)&rest;
         for (int c = 0; c < len; ++c) prest[c] = from[c];   // copy remaining bytes
-        char temp[13];
+        char temp[b32_chars_per_u64];
         encode_word(rest, temp);    // encode to temporary buffer
         int count = b32encoded_size(len);
         strncpy(to, temp, count);
@@ -101,19 +103,19 @@ size_t b32encode(char *from, char *to, size_t len) {
 
 // len = length of base 32 string
 size_t b32decode(char *from, char *to, size_t len) {
-    u64 buf[13];
+    u64 buf[b32_chars_per_u64];
     size_t ds = 0;
-    // size_t es = len / 13 * sizeof(u64);
     while (len > 0)
     {
         int x = (len < sizeof(buf) ? len : sizeof(buf));
         strncpy((char *)buf, from, x);
-        for (int w = 0; w < 13 && w * sizeof(u64) < len + sizeof(u64); ++w)
+        // Assume u64 is 64 bits
+        for (int w = 0; w < b32_chars_per_u64 && w * sizeof(u64) < len + sizeof(u64); ++w)
         {
             u64 t =  ~buf[w] & 0x4040404040404040LL;
             buf[w] = (buf[w] & 0x1f1f1f1f1f1f1f1fLL) ^ (t >> 3);
         }
-        for (char *bytes = (char *)buf; bytes < (char *)(buf + 13) && len > 0; bytes += 13)
+        for (char *bytes = (char *)buf; len > 0 && bytes < ((char *)buf) + sizeof(buf); bytes += b32_chars_per_u64)
         {
             // Note: little endian byte order
             u64 bin = (u64)bytes[0]
@@ -130,10 +132,10 @@ size_t b32decode(char *from, char *to, size_t len) {
                 | ((u64)bytes[11] << 55)
                 | ((u64)bytes[12] << 60);
             int count = sizeof(u64);
-            if (len >= 13)
+            if (len >= b32_chars_per_u64)
             {
-                len -= 13;
-                from += 13;
+                len -= b32_chars_per_u64;
+                from += b32_chars_per_u64;
             }
             else
             {
@@ -148,3 +150,4 @@ size_t b32decode(char *from, char *to, size_t len) {
     }
     return ds;
 }
+
